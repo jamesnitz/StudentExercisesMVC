@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using StudentExercisesMVC.Models;
+using StudentExercisesMVC.Models.ViewModels;
 
 namespace StudentExercisesMVC.Controllers
 {
@@ -92,7 +94,12 @@ namespace StudentExercisesMVC.Controllers
         // GET: Students/Create
         public ActionResult Create()
         {
-            return View();
+            var CohortOptions = GetCohortOptions();
+            var viewModel = new StudentEditViewModel()
+            {
+                CohortOptions = CohortOptions
+            };
+            return View(viewModel);
         }
 
         // POST: Students/Create
@@ -160,7 +167,17 @@ namespace StudentExercisesMVC.Controllers
 
                     }
                     reader.Close();
-                    return View(student);
+                    var CohortOptions = GetCohortOptions();
+                    var viewModel = new StudentEditViewModel()
+                    {
+                        StudentId = student.Id,
+                        FirstName = student.FirstName,
+                        LastName = student.LastName,
+                        CohortId = student.CohortId,
+                        SlackHandle = student.SlackHandle,
+                        CohortOptions = CohortOptions
+                    };
+                    return View(viewModel);
                 }
             }
    
@@ -269,5 +286,33 @@ namespace StudentExercisesMVC.Controllers
             }
         }
 
+        private List<SelectListItem> GetCohortOptions()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT Id, Name FROM COHORT";
+                    var reader = cmd.ExecuteReader();
+                    var options = new List<SelectListItem>();
+                
+                    while (reader.Read())
+                    {
+                        var option = new SelectListItem()
+                        {
+                            Text = reader.GetString(reader.GetOrdinal("Name")),
+                            Value = reader.GetInt32(reader.GetOrdinal("Id")).ToString()
+                         
+                        };
+                        options.Add(option);
+                    }
+                    reader.Close();
+                    return options;  
+                }
+            }
+        }
+
     }
-}
+
+    }
