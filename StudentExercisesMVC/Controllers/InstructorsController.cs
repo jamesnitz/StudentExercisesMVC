@@ -168,7 +168,18 @@ namespace StudentExercisesMVC.Controllers
 
                     }
                     reader.Close();
-                    return View(instructor);
+                    var CohortOptions = GetCohortOptions();
+                    var viewModel = new InstructorFormViewModel()
+                    {
+                        StudentId = instructor.Id,
+                        FirstName = instructor.FirstName,
+                        LastName = instructor.LastName,
+                        CohortId = instructor.CohortId,
+                        SlackHandle = instructor.SlackHandle,
+                        Specialty = instructor.Specialty,
+                        CohortOptions = CohortOptions
+                    };
+                    return View(viewModel);
                 }
             }
         }
